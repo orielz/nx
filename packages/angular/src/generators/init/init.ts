@@ -1,4 +1,4 @@
-import { cypressInitGenerator } from '@nrwl/cypress';
+import { cypressInitGenerator } from '@nrwl/cypress/src/generators/init/init';
 import {
   addDependenciesToPackageJson,
   formatFiles,
@@ -8,8 +8,9 @@ import {
   Tree,
   updateNxJson,
 } from '@nrwl/devkit';
-import { jestInitGenerator } from '@nrwl/jest';
+import { jestInitGenerator } from '@nrwl/jest/generators';
 import { Linter } from '@nrwl/linter';
+import { initGenerator as jsInitGenerator } from '@nrwl/js';
 import { runTasksInSerial } from '@nrwl/workspace/src/utilities/run-tasks-in-serial';
 import { join } from 'path';
 import { E2eTestRunner, UnitTestRunner } from '../../utils/test-runners';
@@ -30,6 +31,7 @@ import {
 import { karmaGenerator } from '../karma/karma';
 import { getGeneratorDirectoryForInstalledAngularVersion } from '../utils/version-utils';
 import { Schema } from './schema';
+import { ensurePeersDeps } from './lib/ensure-peer-deps';
 
 export async function angularInitGenerator(
   tree: Tree,
@@ -47,19 +49,30 @@ export async function angularInitGenerator(
 
   const options = normalizeOptions(rawOptions);
   setDefaults(tree, options);
+  await jsInitGenerator(tree, {
+    js: false,
+    skipFormat: true,
+  });
 
-  const depsTask = !options.skipPackageJson
-    ? updateDependencies(tree)
-    : () => {};
+  await ensurePeersDeps(tree);
+
+  const tasks: GeneratorCallback[] = [];
+
+  if (!options.skipPackageJson) {
+    tasks.push(updateDependencies(tree));
+  }
   const unitTestTask = await addUnitTestRunner(tree, options);
-  const e2eTask = addE2ETestRunner(tree, options);
+  tasks.push(unitTestTask);
+  const e2eTask = await addE2ETestRunner(tree, options);
+  tasks.push(e2eTask);
+
   addGitIgnoreEntry(tree, '.angular');
 
   if (!options.skipFormat) {
     await formatFiles(tree);
   }
 
-  return runTasksInSerial(depsTask, unitTestTask, e2eTask);
+  return runTasksInSerial(...tasks);
 }
 
 function normalizeOptions(options: Schema): Required<Schema> {
@@ -151,7 +164,10 @@ async function addUnitTestRunner(
   }
 }
 
-function addE2ETestRunner(host: Tree, options: Schema): GeneratorCallback {
+async function addE2ETestRunner(
+  host: Tree,
+  options: Schema
+): Promise<GeneratorCallback> {
   switch (options.e2eTestRunner) {
     case E2eTestRunner.Protractor:
       return !options.skipPackageJson

@@ -8,11 +8,10 @@ import {
   removeProjectConfiguration,
   updateJson,
 } from '@nrwl/devkit';
-import { replaceAppNameWithPath } from '@nrwl/workspace/src/utils/cli-config-utils';
+import { getRelativePathToRootTsConfig } from '@nrwl/js';
 import { E2eTestRunner, UnitTestRunner } from '../../../utils/test-runners';
 import type { NormalizedSchema } from './normalized-schema';
 import { createTsConfig } from '../../utils/create-ts-config';
-import { getRelativePathToRootTsConfig } from '@nrwl/workspace/src/utilities/typescript';
 
 export function updateConfigFiles(host: Tree, options: NormalizedSchema) {
   updateTsConfigOptions(host, options);
@@ -55,6 +54,9 @@ function updateAppAndE2EProjectConfigurations(
   let project = readProjectConfiguration(host, options.name);
 
   if (options.ngCliSchematicAppRoot !== options.appProjectRoot) {
+    const {
+      replaceAppNameWithPath,
+    } = require('@nrwl/workspace/src/utils/cli-config-utils');
     project = replaceAppNameWithPath(
       project,
       options.ngCliSchematicAppRoot,

@@ -15,6 +15,7 @@
     "chokidar",
     "ignore",
     "minimatch",
+    "module-alias",
     "rxjs-for-await",
     "webpack-merge",
     "ts-node",

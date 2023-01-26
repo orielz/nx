@@ -193,6 +193,7 @@
     "metro-resolver": "^0.74.1",
     "mini-css-extract-plugin": "~2.4.7",
     "minimatch": "3.0.5",
+    "module-alias": "^2.2.2",
     "next-sitemap": "^3.1.10",
     "ng-packagr": "~15.1.0",
     "node-fetch": "^2.6.7",

@@ -2,7 +2,7 @@ import type { Tree } from '@nrwl/devkit';
 import { joinPathFragments } from '@nrwl/devkit';
 import type { NormalizedSchema } from './normalized-schema';
 
-import { cypressProjectGenerator } from '@nrwl/cypress';
+import { cypressProjectGenerator } from '@nrwl/cypress/src/generators/cypress-project/cypress-project';
 
 import { E2eTestRunner } from '../../../utils/test-runners';
 
